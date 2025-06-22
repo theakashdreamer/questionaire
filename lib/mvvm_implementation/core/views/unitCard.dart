@@ -26,7 +26,9 @@ class UnitCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Row(
+
             children: [
+
               // 🔴 Gradient Left Border
               Container(
                 width: 6,

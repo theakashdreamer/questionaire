@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:questionaire/mvvm_implementation/core/constants/shared_pref_helper.dart' show SharedPrefHelper;
 import 'package:questionaire/styles/appTextStyles.dart' show AppTextStyles;
-
 import '../constants/app_constants.dart';
 import 'mvvm_provider_view.dart';
-class DashboardScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> menuItems = [
-    {'icon': Icons.architecture, 'title': 'MVVM'},               // MVVM => Architecture/design pattern
-    {'icon': Icons.face_retouching_natural, 'title': 'FaceWork'}, // FaceWork => Face icon
-    {'icon': Icons.miscellaneous_services, 'title': 'Service'},   // Service => Services icon
-    {'icon': Icons.notifications_active, 'title': 'Notification'},// Notification => Active bell icon
-    {'icon': Icons.flutter_dash, 'title': 'GetX'},                // GetX => Flutter mascot (if using Flutter's icon)
-    {'icon': Icons.settings_suggest, 'title': 'State management'},// State Management => Gear/settings icon
-  ];
+import 'package:flutter/material.dart';
+ // adjust path as needed
 
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final List<Map<String, dynamic>> menuItems = [
+    {'icon': Icons.architecture, 'title': 'MVVM'},
+    {'icon': Icons.face_retouching_natural, 'title': 'FaceWork'},
+    {'icon': Icons.miscellaneous_services, 'title': 'Service'},
+    {'icon': Icons.notifications_active, 'title': 'Notification'},
+    {'icon': Icons.flutter_dash, 'title': 'GetX'},
+    {'icon': Icons.settings_suggest, 'title': 'State management'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -23,19 +32,21 @@ class DashboardScreen extends StatelessWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Colors.blue),
-            )
-            ,
-          )
+            child: GestureDetector(
+              onTap: () => _showUserDetailsBottomSheet(context),
+              child: const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.blue),
+              ),
+            ),
+          ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: GridView.builder(
           itemCount: menuItems.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
@@ -47,15 +58,15 @@ class DashboardScreen extends StatelessWidget {
               ),
               elevation: 4,
               child: InkWell(
-                  onTap: () => handleMenuTap(context, menuItems[index]['title']),
+                onTap: () => handleMenuTap(context, menuItems[index]['title']),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(menuItems[index]['icon'], size: 40, color: Colors.blue),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       menuItems[index]['title'],
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     )
                   ],
                 ),
@@ -68,29 +79,47 @@ class DashboardScreen extends StatelessWidget {
   }
 
   void handleMenuTap(BuildContext context, String title) {
-    // Navigate using named routes
     switch (title) {
       case 'MVVM':
         Navigator.pushNamed(context, RoutePaths.mvvmScreen);
         break;
-/*      case 'FaceWork':
-        Navigator.pushNamed(context, RoutePaths.faceWorkScreen);
-        break;
-      case 'Service':
-        Navigator.pushNamed(context, RoutePaths.serviceScreen);
-        break;
-      case 'Notification':
-        Navigator.pushNamed(context, RoutePaths.notificationScreen);
-        break;
-      case 'GetX':
-        Navigator.pushNamed(context, RoutePaths.getxScreen);
-        break;
-      case 'State management':
-        Navigator.pushNamed(context, RoutePaths.stateManagementScreen);
-        break;*/
-      default:
-        break;
+    // Add other routes here if needed
     }
   }
 
+  void _showUserDetailsBottomSheet(BuildContext context) async {
+    final email = await SharedPrefHelper().getUserEmail();
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.person, size: 40, color: Colors.blue),
+              const SizedBox(height: 8),
+              Text(email ?? "Unknown User", style: const TextStyle(fontSize: 16)),
+              const Divider(height: 20),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text("Logout"),
+                onTap: () async {
+                  await SharedPrefHelper().logout();
+                  if (context.mounted) {
+                    Navigator.pop(context); // Close bottom sheet
+                    Navigator.pushReplacementNamed(context, RoutePaths.login);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
