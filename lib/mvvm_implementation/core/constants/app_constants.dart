@@ -3,5 +3,5 @@ class RoutePaths {
   static const String register = 'register';
   static const String mvvmScreen = 'mvvmScreen';
   static const String DashboardScreen = 'DashboardScreen';
-
+  static const String CameraXView = 'CameraXView';
 }

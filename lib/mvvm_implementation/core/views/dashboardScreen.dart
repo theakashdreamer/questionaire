@@ -1,5 +1,8 @@
+import 'package:camera/camera.dart' show availableCameras;
 import 'package:flutter/material.dart';
+import 'package:questionaire/camera/camera_x_view.dart' show CameraXView;
 import 'package:questionaire/mvvm_implementation/core/constants/shared_pref_helper.dart' show SharedPrefHelper;
+import 'package:questionaire/mvvm_implementation/core/views/loginmodules/user_details_drawer.dart';
 import 'package:questionaire/styles/appTextStyles.dart' show AppTextStyles;
 import '../constants/app_constants.dart';
 import 'mvvm_provider_view.dart';
@@ -16,7 +19,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final List<Map<String, dynamic>> menuItems = [
     {'icon': Icons.architecture, 'title': 'MVVM'},
-    {'icon': Icons.face_retouching_natural, 'title': 'FaceWork'},
+    {'icon': Icons.camera_alt_outlined, 'title': 'Camera'},
     {'icon': Icons.miscellaneous_services, 'title': 'Service'},
     {'icon': Icons.notifications_active, 'title': 'Notification'},
     {'icon': Icons.flutter_dash, 'title': 'GetX'},
@@ -32,16 +35,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: GestureDetector(
-              onTap: () => _showUserDetailsBottomSheet(context),
-              child: const CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, color: Colors.blue),
+            child: Builder(
+              builder: (context) => GestureDetector(
+                onTap: () => Scaffold.of(context).openEndDrawer(),
+                child: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, color: Colors.blue),
+                ),
               ),
             ),
           ),
         ],
       ),
+      endDrawer: const UserDetailsDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: GridView.builder(
@@ -75,51 +81,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
       ),
+
     );
   }
 
-  void handleMenuTap(BuildContext context, String title) {
+  Future<void> handleMenuTap(BuildContext context, String title) async {
     switch (title) {
       case 'MVVM':
         Navigator.pushNamed(context, RoutePaths.mvvmScreen);
         break;
-    // Add other routes here if needed
+      case 'Camera':
+        Navigator.pushNamed(context, RoutePaths.CameraXView);
+        break;
+      default:
+        debugPrint('No matching route for $title');
+
     }
   }
 
-  void _showUserDetailsBottomSheet(BuildContext context) async {
-    final email = await SharedPrefHelper().getUserEmail();
-
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.person, size: 40, color: Colors.blue),
-              const SizedBox(height: 8),
-              Text(email ?? "Unknown User", style: const TextStyle(fontSize: 16)),
-              const Divider(height: 20),
-              ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text("Logout"),
-                onTap: () async {
-                  await SharedPrefHelper().logout();
-                  if (context.mounted) {
-                    Navigator.pop(context); // Close bottom sheet
-                    Navigator.pushReplacementNamed(context, RoutePaths.login);
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
